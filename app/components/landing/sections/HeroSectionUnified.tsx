@@ -4,10 +4,8 @@ import Image from 'next/image';
 import { useRef, useState } from 'react';
 import Button from '@/app/components/ui/Button';
 import { practiceLevels } from '../landingData';
-import { Play, Pause, PlayCircle, PlayCircleIcon, PlayIcon, Waves, AudioWaveform, LucideAudioWaveform, Pen, ArrowBigDown, ArrowDown, MenuIcon, LassoSelectIcon, ArrowBigDownDash } from "lucide-react";
-import { Playfair_Display } from 'next/font/google';
-import AudioButton from '../../ui/AudioButton';
-import { SelectArrow } from '@radix-ui/react-select';
+import {  Pen, ArrowBigDownDash } from "lucide-react";
+import AudioPlayer from '@/app/components/ui/AudioPlayer';
 
 interface TrackPreview {
   id: string;
@@ -28,16 +26,6 @@ interface HeroSectionProps {
   selectedLevel: string;
   submitMessage: string;
 }
-
-const effortLevels = [
-  { label: 'مبتدی', key: 'beginner' },
-  { label: 'متوسط', key: 'intermediate' },
-  { label: 'پیشرفته', key: 'advanced' },
-];
-
-const waveform = [
-  26, 34, 48, 22, 40, 55, 68, 42, 36, 58, 74, 52, 38, 47, 64, 41, 30, 39, 54, 33,
-];
 
 export default function HeroSectionUnified({
   currentTrack,
@@ -237,7 +225,9 @@ export default function HeroSectionUnified({
               
                 {/* ----------------------------- Audio And Speed Slider ------------------------------ */}
                 <div className="p-2">
-                <div className="flex gap-4 justify-between items-center">
+
+                  <AudioPlayer src={currentTrack?.filePath ?? null} />
+                {/* <div className="flex gap-4 justify-between items-center">
           
               
                  <div className='w-full'>
@@ -265,7 +255,7 @@ export default function HeroSectionUnified({
                     <PlayCircleIcon size={64}/>
                   </button>
          
-                </div>
+                </div> */}
 
                 {currentTrack ? (
                     <audio
@@ -340,94 +330,7 @@ export default function HeroSectionUnified({
             </div></div></div>
             </div>
 
-                  {/* ----------------------------- Demo Player Settings ------------------------------ */}
-
-                  <div className="rounded-[1.5rem] border border-[#e7e0cd] bg-white p-4">
-                <div className="space-y-4">
-                  <div>
-                    <div className="mb-2 text-sm font-semibold text-[#31482f]">لهجه را انتخاب کنید</div>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between rounded-xl border border-[#d8dfd2] bg-white px-3 py-2 text-sm text-[#344534]"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-lg">🇬🇧</span>
-                        <span>{dialect}</span>
-                      </span>
-                      <span className="text-[#7d8b74]">⌄</span>
-                    </button>
-                  </div>
-
-                  <div>
-                    <div className="mb-2 text-sm font-semibold text-[#31482f]">سطح خود را انتخاب کنید</div>
-                    <div className="flex flex-wrap gap-2">
-                      {effortLevels.map((level) => {
-                        const active = effortLevel === level.key;
-                        return (
-                          <button
-                            key={level.key}
-                            type="button"
-                            onClick={() => setEffortLevel(level.key)}
-                            className={[
-                              'rounded-lg border px-3 py-2 text-xs font-semibold transition',
-                              active
-                                ? 'border-[#355c39] bg-[#355c39] text-white'
-                                : 'border-[#d8dfd2] bg-white text-[#5b6a55] hover:border-[#b8c7af]',
-                            ].join(' ')}
-                          >
-                            {level.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {practiceLevels.map((level) => {
-                        const active = selectedLevel === level;
-                        return (
-                          <button
-                            key={level}
-                            type="button"
-                            onClick={() => onSelectLevel(level)}
-                            className={[
-                              'rounded-lg border px-3 py-2 text-sm transition',
-                              active
-                                ? 'border-[#355c39] bg-[#355c39] text-white'
-                                : 'border-[#d8dfd2] bg-white text-[#5b6a55] hover:border-[#b8c7af]',
-                            ].join(' ')}
-                          >
-                            {level}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm font-semibold text-[#31482f]">
-                      <span>سرعت صدا</span>
-                      <span className="text-[#7b8a73]">نرمال</span>
-                    </div>
-                    <div className="relative rounded-full bg-[#f2f2e8] px-3 py-4">
-                      <input
-                        type="range"
-                        min="20"
-                        max="100"
-                        value={speed}
-                        onChange={(e) => setSpeed(Number(e.target.value))}
-                        className="w-full accent-[#355c39]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1rem] border border-dashed border-[#e5d8b5] bg-[#fffaf0] px-3 py-3 text-xs leading-6 text-[#7b6d4d]">
-                    اگر بخواهی، می‌توانی قبل از ارسال، جواب را مرور کنی و دوباره گوش بدهی.
-                  </div>
-                </div>
-              </div>
-
-        
-          
+                           
         </div>
       </div>
     </section>

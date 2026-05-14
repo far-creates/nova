@@ -19,7 +19,7 @@ interface TrackPreview {
   createdAt: string;
 }
 
-const levelOrder = ['A1', 'B1', 'B2', 'C1'];
+const levelOrder = ['A1','A2', 'B1', 'B2', 'C1','C2'];
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
