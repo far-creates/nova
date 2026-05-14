@@ -1,9 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+import Header from '@/app/components/landing/sections/Header';
+import HeroSection from '@/app/components/landing/sections/HeroSectionUnified';
+import ValueBanner from '@/app/components/landing/sections/ValueBanner';
+import FeatureGrid from '@/app/components/landing/sections/FeatureGrid';
+import AudienceGrid from '@/app/components/landing/sections/AudienceGrid';
+import ImpactSection from '@/app/components/landing/sections/ImpactSection';
+import ClosingCTA from '@/app/components/landing/sections/ClosingCTA';
 
 interface TrackPreview {
   id: string;
@@ -13,11 +19,14 @@ interface TrackPreview {
   createdAt: string;
 }
 
+const levelOrder = ['A1', 'B1', 'B2', 'C1'];
+
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [tracks, setTracks] = useState<TrackPreview[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [selectedLevel, setSelectedLevel] = useState('B1');
   const [typedPreview, setTypedPreview] = useState('');
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -37,25 +46,51 @@ export default function LandingPage() {
     loadTracks();
   }, []);
 
-  const boundedTrackIndex =
-    tracks.length === 0 ? 0 : Math.min(currentTrackIndex, tracks.length - 1);
-  const currentTrack = tracks[boundedTrackIndex] ?? null;
-
-  const practiceTiles = useMemo(() => {
-    const labels = ['A1', 'B1', 'C1', 'A2', 'B2', 'C2'];
-    return labels.map((label, idx) => ({
-      label,
-      track: tracks[idx] ?? null,
-    }));
+  const tracksByLevel = useMemo(() => {
+    const groups = new Map<string, TrackPreview[]>();
+    tracks.forEach((track) => {
+      const key = String(track.difficulty || '').toUpperCase();
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)?.push(track);
+    });
+    return groups;
   }, [tracks]);
+
+  const currentTrack =
+    tracks.length === 0 ? null : tracks[Math.min(currentTrackIndex, tracks.length - 1)] ?? null;
 
   const selectRandomNextTrack = () => {
     if (tracks.length <= 1) return;
-    let next = boundedTrackIndex;
-    while (next === boundedTrackIndex) {
-      next = Math.floor(Math.random() * tracks.length);
-    }
+    const next = Math.floor(Math.random() * tracks.length);
     setCurrentTrackIndex(next);
+    const nextTrack = tracks[next];
+    const nextLevel = String(nextTrack?.difficulty || '').toUpperCase();
+    if (levelOrder.includes(nextLevel)) {
+      setSelectedLevel(nextLevel);
+    }
+  };
+
+  const selectLevel = (level: string) => {
+    setSelectedLevel(level);
+    const levelTrack = tracksByLevel.get(level)?.[0];
+    const fallbackTrack = tracks[0];
+    const nextTrack = levelTrack ?? fallbackTrack;
+    if (!nextTrack) return;
+    const nextIndex = tracks.findIndex((track) => track.id === nextTrack.id);
+    if (nextIndex >= 0) {
+      setCurrentTrackIndex(nextIndex);
+      setTypedPreview('');
+      setSubmitMessage(`سطح ${level} انتخاب شد`);
+    }
+  };
+
+  const handleShuffleTrack = () => {
+    if (!tracks.length) return;
+    selectRandomNextTrack();
+    setTypedPreview('');
+    setSubmitMessage('یک تمرین تازه انتخاب شد');
   };
 
   const handleSubmitRandom = async () => {
@@ -84,131 +119,41 @@ export default function LandingPage() {
       }
 
       setTypedPreview('');
-      setSubmitMessage('Saved. Next random track loaded.');
+      setSubmitMessage('پاسخت ذخیره شد. تمرین بعدی آماده است.');
       selectRandomNextTrack();
     } catch (error) {
       console.error('Submit failed:', error);
-      setSubmitMessage('Could not submit. Try again.');
+      setSubmitMessage('ارسال انجام نشد. لطفاً دوباره تلاش کن.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-blue-50 px-6 py-8">
-      <div className="max-w-6xl mx-auto">
-        <header className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900">Listening App</h1>
-            <p className="text-slate-600 mt-1 text-lg">Train your ears</p>
-          </div>
-
-          <div className="flex gap-3">
-            {loading ? null : user ? (
-              <Link href="/profile" className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition">
-                Profile
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700 font-medium hover:bg-slate-300 transition"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-                >
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
-        </header>
-
-        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="w-full md:w-auto">
-              {currentTrack ? (
-                <audio key={currentTrack.id} controls className="w-full md:w-72">
-                  <source src={currentTrack.filePath} />
-                  Your browser does not support audio playback.
-                </audio>
-              ) : (
-                <div className="w-full md:w-72 h-12 rounded-lg border border-slate-300 text-sm text-slate-500 flex items-center justify-center">
-                  No preview track yet
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1">
-              <p className="text-xs text-slate-500 mb-1">Listen, then type what you hear:</p>
-              <input
-                value={typedPreview}
-                onChange={(e) => setTypedPreview(e.target.value)}
-                placeholder="Type what you heard..."
-                className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSubmitRandom}
-              disabled={submitting || !typedPreview.trim() || !currentTrack}
-              className="px-5 py-3 rounded-lg bg-blue-600 text-white font-medium text-center hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {submitting ? 'Submitting...' : 'Submit'}
-            </button>
-          </div>
-
-          {currentTrack ? (
-            <div className="mt-4 text-sm text-slate-600">
-              Random track: <span className="font-medium text-slate-800">{currentTrack.title}</span>
-            </div>
-          ) : null}
-          {submitMessage ? <p className="mt-2 text-sm text-blue-700">{submitMessage}</p> : null}
-        </section>
-
-        <section className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
-          <div className="grid grid-cols-3 gap-4">
-            {practiceTiles.map((item, i) => (
-              <button
-                key={`${item.label}-${i}`}
-                type="button"
-                onClick={() => {
-                  if (!user) {
-                    router.push('/login');
-                    return;
-                  }
-                  if (!item.track) return;
-                  const idx = tracks.findIndex((t) => t.id === item.track?.id);
-                  if (idx >= 0) {
-                    setCurrentTrackIndex(idx);
-                    setTypedPreview('');
-                    setSubmitMessage(`Selected ${item.label}: ${item.track.title}`);
-                  }
-                }}
-                className="h-28 rounded-xl border border-slate-300 bg-white shadow-sm hover:shadow-md transition p-3 flex flex-col items-center justify-center text-slate-700"
-              >
-                <span className="text-2xl font-semibold">{item.label}</span>
-                <span className="text-xs text-slate-500 mt-1 text-center line-clamp-1">
-                  {item.track ? item.track.title : 'Coming soon'}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="space-y-4">
-            <div className="h-24 rounded-xl border border-slate-300 bg-white shadow-sm px-4 flex items-center text-lg font-medium text-slate-700">
-              Browse by topic
-            </div>
-            <div className="h-64 rounded-xl border border-slate-300 bg-white shadow-sm px-4 py-4 flex items-center justify-center text-2xl font-semibold text-slate-700 text-center">
-              Test yourself
-            </div>
-          </div>
-        </section>
-      </div>
+    <div className="min-h-screen bg-[#fdfaf2] text-[#2a402d]">
+      <Header isAuthenticated={Boolean(user)} loading={loading} />
+      <main className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute left-0 top-24 h-72 w-72 rounded-full bg-[#dfebcf]/40 blur-3xl" />
+          <div className="absolute right-0 top-96 h-80 w-80 rounded-full bg-[#f3ddb1]/35 blur-3xl" />
+        </div>
+        <HeroSection
+          currentTrack={currentTrack}
+          typedPreview={typedPreview}
+          onTypedPreviewChange={setTypedPreview}
+          onSubmit={handleSubmitRandom}
+          submitting={submitting}
+          onSelectLevel={selectLevel}
+          onShuffleTrack={handleShuffleTrack}
+          selectedLevel={selectedLevel}
+          submitMessage={submitMessage}
+        />
+        <ValueBanner />
+        <FeatureGrid />
+        <AudienceGrid />
+        <ImpactSection />
+        <ClosingCTA />
+      </main>
     </div>
   );
 }

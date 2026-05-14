@@ -1,6 +1,5 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { loadEnvConfig } from '@next/env';
 import { closeConnection } from '../lib/db';
 import { upsertTrackWithSentence, ensureAudioSchema } from '../lib/tracks';
 
@@ -11,8 +10,40 @@ interface ManifestItem {
   sentence: string;
 }
 
+function applyEnvLine(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return;
+
+  const separatorIndex = trimmed.indexOf('=');
+  if (separatorIndex === -1) return;
+
+  const key = trimmed.slice(0, separatorIndex).trim();
+  let value = trimmed.slice(separatorIndex + 1).trim();
+
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    value = value.slice(1, -1);
+  }
+
+  if (key && process.env[key] === undefined) {
+    process.env[key] = value;
+  }
+}
+
+async function loadLocalEnv() {
+  const envPath = path.join(process.cwd(), '.env.local');
+  try {
+    const raw = await fs.readFile(envPath, 'utf8');
+    raw.split(/\r?\n/).forEach(applyEnvLine);
+  } catch {
+    // Optional local override file.
+  }
+}
+
 async function main() {
-  loadEnvConfig(process.cwd());
+  await loadLocalEnv();
 
   const manifestPath = path.join(process.cwd(), 'scripts', 'data', 'audio-manifest.json');
   const raw = await fs.readFile(manifestPath, 'utf8');

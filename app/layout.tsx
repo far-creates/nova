@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from './context/AuthContext';
-import './globals.css'; // Make sure you have this file
+import './globals.css';
+import { Vazirmatn } from 'next/font/google';
+
+const vazirmatn = Vazirmatn({
+  subsets: ['arabic'],
+});
+
 
 export const metadata: Metadata = {
-  title: 'Listening App',
-  description: 'Learn English by listening and typing',
+  title: 'Nova | مهارت شنیدن',
+  description: 'یک پلتفرم گرم و مینیمال برای تقویت مهارت شنیدن و تمرین زبان',
 };
 
 export default function RootLayout({
@@ -13,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="fa" dir="rtl">
+      <body className={vazirmatn.className}>
         <AuthProvider>
           {children}
         </AuthProvider>
