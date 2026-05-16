@@ -5,9 +5,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface AudioPlayerProps {
   src: string | null;
- 
   className?: string;
 }
+
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) {
@@ -19,6 +19,7 @@ function formatTime(seconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
+
 export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -29,24 +30,27 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
   const currentLabel = useMemo(() => formatTime(currentTime), [currentTime]);
   const durationLabel = useMemo(() => formatTime(duration), [duration]);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.pause();
-    audio.currentTime = 0;
-    audio.playbackRate = playbackRate;
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
-  }, [src, playbackRate]);
-
+  // Effect to update playback rate when slider changes (always works)
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackRate;
     }
   }, [playbackRate]);
 
+  // Effect to load new src without resetting UI manually
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // When src changes, update the audio element's source
+    if (src) {
+      audio.src = src;
+      audio.load(); // resets the track internally – browser handles currentTime/duration
+      // The 'loadedmetadata' event will update our state
+    }
+  }, [src]);
+
+  // Event listeners for metadata, time update, play/pause, ended
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -54,6 +58,8 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
     const handleLoadedMetadata = () => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
       setCurrentTime(audio.currentTime || 0);
+      // Apply the current playback rate after loading
+      audio.playbackRate = playbackRate;
     };
 
     const handleTimeUpdate = () => {
@@ -73,7 +79,10 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
 
-    handleLoadedMetadata();
+    // If src is already set, manually trigger loadedmetadata
+    if (audio.src) {
+      handleLoadedMetadata();
+    }
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -82,7 +91,7 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [src]);
+  }, [src, playbackRate]); // re-run when src changes to reattach, but note playbackRate in deps
 
   const handleTogglePlayback = async () => {
     const audio = audioRef.current;
@@ -92,18 +101,17 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
       try {
         await audio.play();
       } catch {
-        // The browser can block autoplay-like starts; the button remains available.
+        // Autoplay blocked – ignore
       }
-      return;
+    } else {
+      audio.pause();
     }
-
-    audio.pause();
   };
 
   return (
     <div className={className}>
       <div className="p-4" dir='ltr'>
-      <div className="mb-2 flex items-center justify-between text-sm font-semibold text-[#31482f]">
+        <div className="mb-2 flex items-center justify-between text-sm font-semibold text-[#31482f]">
           <span> </span>
           <span className="text-[#7b8a73]">{playbackRate.toFixed(2)}x</span>
         </div>
@@ -111,37 +119,35 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
           <button
             type="button"
             onClick={handleTogglePlayback}
-            className="grid h-14 w-14 shrink-0 place-items-center rounded-full  text-[#355c39] shadow-[0_12px_24px_rgba(53,92,57,0.2)]"
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-[#355c39] shadow-[0_12px_24px_rgba(53,92,57,0.2)]"
             aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
           >
-            {isPlaying ? <PauseCircle size={64} /> : <PlayCircle size={64}  />}
+            {isPlaying ? <PauseCircle size={64} /> : <PlayCircle size={64} />}
           </button>
 
           <div className="mt-4 w-full">
-     
-        <div className="relative rounded-full bg-[#f2f2e8] px-3 py-4">
-          <div className='flex gap-1'>
-          <TurtleIcon size={24}/>
-           
-          <input
-            type="range"
-            min="0.5"
-            max="2.0"
-            step="0.05"
-            value={playbackRate}
-            onChange={(e) => setPlaybackRate(Number(e.target.value))}
-            className="w-full accent-[#355c39]"
-            aria-label="Playback speed"
-          />  <RabbitIcon size={24}/></div>
-        </div>
-      </div>
+            <div className="relative rounded-full bg-[#f2f2e8] px-3 py-4">
+              <div className='flex gap-1'>
+                <TurtleIcon size={24}/>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.0"
+                  step="0.05"
+                  value={playbackRate}
+                  onChange={(e) => setPlaybackRate(Number(e.target.value))}
+                  className="w-full accent-[#355c39]"
+                  aria-label="Playback speed"
+                />
+                <RabbitIcon size={24}/>
+              </div>
+              </div>
+              <span className='text-sm'> {currentLabel} / {durationLabel} </span>
+          </div>
         </div>
 
-        {src ? (
-          <audio ref={audioRef} key={src} src={src} className="sr-only" />
-        ) : null}
+        {src && <audio ref={audioRef} src={src} />}
       </div>
-
-     </div>
+    </div>
   );
 }

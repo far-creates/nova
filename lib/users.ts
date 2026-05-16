@@ -42,43 +42,17 @@ export async function createUser(email: string, password: string, username?: str
 
 export async function verifyUserPassword(email: string, password: string): Promise<User | null> {
   try {
-    console.log('[verifyUserPassword] Starting for email:', email);
-    
     const pool = await getConnection();
-    console.log('[verifyUserPassword] Database connection established');
-    
     const result = await pool.request()
       .input('email', email)
       .query('SELECT id, email, password, username, createdAt FROM [User] WHERE email = @email');
     
-    console.log('[verifyUserPassword] Query result recordset length:', result.recordset?.length);
-    
     const user = result.recordset[0];
-    if (!user) {
-      console.log('[verifyUserPassword] User not found for email:', email);
-      return null;
-    }
+    if (!user) return null;
 
-    console.log('[verifyUserPassword] User found:', { id: user.id, email: user.email });
-    console.log('[verifyUserPassword] Stored password hash type:', typeof user.password);
-    console.log('[verifyUserPassword] Stored password hash length:', user.password?.length);
-    console.log('[verifyUserPassword] Stored password hash starts with:', user.password?.substring(0, 10));
-    console.log('[verifyUserPassword] Input password length:', password.length);
-    
-    // Use the imported verifyPassword function
-    console.log('[verifyUserPassword] Calling bcrypt compare...');
     const isValid = await verifyPassword(password, user.password);
+    if (!isValid) return null;
     
-    console.log('[verifyUserPassword] Password comparison result:', isValid);
-
-    if (!isValid) {
-      console.log('[verifyUserPassword] Password mismatch for user:', email);
-      return null;
-    }
-    
-    console.log('[verifyUserPassword] Password verified successfully');
-    
-    // Return user data WITHOUT password
     return {
       id: user.id,
       email: user.email,
@@ -86,9 +60,8 @@ export async function verifyUserPassword(email: string, password: string): Promi
       createdAt: user.createdAt
     };
   } catch (error) {
-    console.error('[verifyUserPassword] ERROR:', error);
-    console.error('[verifyUserPassword] Error message:', error instanceof Error ? error.message : String(error));
-    console.error('[verifyUserPassword] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    // Optionally log a generic error without details
+    console.error('[verifyUserPassword] Internal error');
     return null;
   }
 }

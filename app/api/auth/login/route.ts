@@ -42,8 +42,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         username: user.username
-      },
-      token 
+      }
     });
     
     response.cookies.set('auth_token', token, {
