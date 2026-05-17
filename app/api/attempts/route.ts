@@ -1,5 +1,3 @@
-// app/api/attempts/route.ts
-
 import { getSentenceById, createAttempt } from '@/lib/sentences';
 import { compareTexts } from '@/lib/compareTexts';
 import { verifyToken } from '@/lib/auth';

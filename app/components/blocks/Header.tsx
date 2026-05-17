@@ -1,9 +1,11 @@
+// !!! Correct {import { navigationLinks } from '../landing/landingData';}
+
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '@/app/components/ui/Button';
-import { navigationLinks } from '../landingData';
+import { navigationLinks } from '../landing/landingData';
 
 interface HeaderProps {
   isAuthenticated: boolean;
@@ -14,13 +16,15 @@ export default function Header({ isAuthenticated, loading }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-transparent bg-[#fdfaf2]/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="#home" className="flex items-center gap-3">
+        <Link href="#home" className="flex items-center gap-3 w-60 h-18">
           <Image
             src="/images/logo/nova-logo.png"
             alt="Nova"
-            width={220}
-            height={56}
-            className="h-12 w-auto object-contain sm:h-14"
+            width={240}
+            height={75}
+            style={{
+                objectFit: 'cover',
+                }}
             priority
           />
         </Link>
@@ -44,7 +48,7 @@ export default function Header({ isAuthenticated, loading }: HeaderProps) {
                 <Link href="/login">ورود</Link>
               </Button>
               <Button asChild variant="solid" size="sm">
-                <Link href="/signup">ثبت‌نام رایگان</Link>
+                <Link href="/signup">ثبت‌نام</Link>
               </Button>
             </>
           )}
