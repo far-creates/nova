@@ -1,16 +1,12 @@
 'use client';
 
+import type { LegacyUserStats } from '@/packages/api/src/profile';
+
 interface UserStatsProps {
   stats: UserStats;
 }
 
-export interface UserStats {
-  totalAttempts: number;
-  averageAccuracy: number;
-  bestAccuracy: number;
-  worstAccuracy: number;
-  lastAttempt: string | null;
-}
+export type UserStats = LegacyUserStats;
 
 export default function UserStatsComponent({ stats }: UserStatsProps) {
   const formatDate = (dateString: string | null) => {

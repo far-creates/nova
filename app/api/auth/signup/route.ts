@@ -1,18 +1,27 @@
 import { createUser, getUserByEmail } from '@/lib/users';
 import { createToken } from '@/lib/auth';
+import {
+  legacyAuthSuccessSchema,
+  legacySignupRequestSchema,
+} from '@/packages/api/src/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, username } = body;
+    const parsedBody = legacySignupRequestSchema.safeParse(body);
 
-    if (!email || !password) {
+    if (!parsedBody.success) {
       return NextResponse.json(
-        { error: 'Email and password required' },
+        {
+          error: 'Invalid signup payload',
+          details: parsedBody.error.flatten(),
+        },
         { status: 400 }
       );
     }
+
+    const { email, password, username } = parsedBody.data;
 
     // Check if user exists
     const existing = await getUserByEmail(email);
@@ -27,7 +36,13 @@ export async function POST(request: NextRequest) {
     const user = await createUser(email, password, username);
     const token = createToken(user.id);
 
-    const response = NextResponse.json({ user, token });
+    const parsedResponse = legacyAuthSuccessSchema.safeParse({ user });
+    if (!parsedResponse.success) {
+      console.error('Invalid signup response payload:', parsedResponse.error.flatten());
+      return NextResponse.json({ error: 'Failed to sign up' }, { status: 500 });
+    }
+
+    const response = NextResponse.json(parsedResponse.data);
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

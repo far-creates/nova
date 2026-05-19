@@ -1,6 +1,7 @@
 'use client';
 
 import { calculateAccuracy } from '@/lib/accuracy';
+import type { LegacyProfileAttempt } from '@/packages/api/src/profile';
 
 interface AttemptsHistoryProps {
   attempts: AttemptWithSentence[];
@@ -13,6 +14,8 @@ export interface AttemptWithSentence {
   userText: string;
   createdAt: string;
 }
+
+export type AttemptHistoryItem = LegacyProfileAttempt;
 
 export default function AttemptsHistory({ attempts }: AttemptsHistoryProps) {
   const formatDate = (dateString: string) => {

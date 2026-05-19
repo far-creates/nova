@@ -2,6 +2,9 @@
 
 import { PauseCircle, PlayCircle, RabbitIcon, TurtleIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale } from '@/app/context/LocaleContext';
+import { cn } from '@/lib/cn';
+import Card from '@/app/components/ui/Card';
 
 interface AudioPlayerProps {
   src: string | null;
@@ -21,11 +24,13 @@ function formatTime(seconds: number) {
 
 
 export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
+  const { messages } = useLocale();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const isReady = Boolean(src);
 
   const currentLabel = useMemo(() => formatTime(currentTime), [currentTime]);
   const durationLabel = useMemo(() => formatTime(duration), [duration]);
@@ -109,26 +114,39 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
   };
 
   return (
-    <div className={className}>
-      <div className="p-4" dir='ltr'>
-        <div className="mb-2 flex items-center justify-between text-sm font-semibold text-[#31482f]">
-          <span> </span>
-          <span className="text-[#7b8a73]">{playbackRate.toFixed(2)}x</span>
+    <Card
+      variant="data"
+      padding="md"
+      className={cn(
+        'transition-colors',
+        isPlaying ? 'player-active' : 'player-ready',
+        className
+      )}
+    >
+      <div className="space-y-4" dir="ltr">
+        <div className="flex items-center justify-between text-sm font-semibold text-[color:var(--color-text)]">
+          <span className="font-ui-en text-xs uppercase tracking-[0.18em] text-[color:var(--color-text-soft)]">
+            {isReady ? messages.practiceWorkspace.ready : messages.practiceWorkspace.idle}
+          </span>
+          <span className="font-ui-en text-[color:var(--color-text-muted)]">
+            {playbackRate.toFixed(2)}x
+          </span>
         </div>
-        <div className="flex justify-between items-center gap-4">
+        <div className="flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={handleTogglePlayback}
-            className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-[#355c39] shadow-[0_12px_24px_rgba(53,92,57,0.2)]"
+            disabled={!isReady}
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[color:var(--color-surface-elevated)] text-[color:var(--color-primary)] shadow-[var(--shadow-soft)] transition hover:bg-[color:var(--color-bg-elevated)] disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
           >
             {isPlaying ? <PauseCircle size={64} /> : <PlayCircle size={64} />}
           </button>
 
-          <div className="mt-4 w-full">
-            <div className="relative rounded-full bg-[#f2f2e8] px-3 py-4">
-              <div className='flex gap-1'>
-                <TurtleIcon size={24}/>
+          <div className="w-full space-y-3">
+            <div className="relative rounded-full bg-[color:var(--color-surface-muted)] px-3 py-4">
+              <div className="flex items-center gap-2">
+                <TurtleIcon size={20} className="text-[color:var(--color-text-muted)]" />
                 <input
                   type="range"
                   min="0.5"
@@ -136,18 +154,30 @@ export default function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
                   step="0.05"
                   value={playbackRate}
                   onChange={(e) => setPlaybackRate(Number(e.target.value))}
-                  className="w-full accent-[#355c39]"
+                  disabled={!isReady}
+                  className="w-full accent-[color:var(--color-primary)] disabled:opacity-50"
                   aria-label="Playback speed"
                 />
-                <RabbitIcon size={24}/>
+                <RabbitIcon size={20} className="text-[color:var(--color-text-muted)]" />
               </div>
-              </div>
-              <span className='text-sm'> {currentLabel} / {durationLabel} </span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-[color:var(--color-text-muted)]">
+              <span className="font-ui-en">
+                {currentLabel} / {durationLabel}
+              </span>
+              <span>
+                {isPlaying
+                  ? messages.practiceWorkspace.playing
+                  : isReady
+                    ? messages.practiceWorkspace.paused
+                    : messages.practiceWorkspace.noTrack}
+              </span>
+            </div>
           </div>
         </div>
 
         {src && <audio ref={audioRef} src={src} />}
       </div>
-    </div>
+    </Card>
   );
 }

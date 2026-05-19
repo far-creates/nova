@@ -7,29 +7,22 @@ import { useAuth } from '@/app/context/AuthContext';
 import UserStatsComponent, { UserStats } from '@/app/components/UserStatsComponent';
 import AttemptsHistory, { AttemptWithSentence } from '@/app/components/AttemptsHistory';
 import ActivityHeatmap from '@/app/components/ActivityHeatmap';
-
-interface DailySummary {
-  date: string;
-  attemptsCount: number;
-  averageAccuracy: number;
-  bestAccuracy: number;
-  worstAccuracy: number;
-}
-
-interface SentenceOption {
-  sentenceId: string;
-  sentenceText: string;
-}
+import { fetchLegacyProfile } from '@/packages/api/src/client';
+import type {
+  LegacyDailySummary,
+  LegacyProfileResponse,
+  LegacySentenceOption,
+} from '@/packages/api/src/profile';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [dailySummaries, setDailySummaries] = useState<DailySummary[]>([]);
+  const [dailySummaries, setDailySummaries] = useState<LegacyDailySummary[]>([]);
   const [attempts, setAttempts] = useState<AttemptWithSentence[]>([]);
   const [attemptsTotal, setAttemptsTotal] = useState(0);
-  const [sentenceOptions, setSentenceOptions] = useState<SentenceOption[]>([]);
+  const [sentenceOptions, setSentenceOptions] = useState<LegacySentenceOption[]>([]);
 
   const [view, setView] = useState<'summary' | 'attempts'>('summary');
   const [dateFilter, setDateFilter] = useState('');
@@ -57,24 +50,18 @@ export default function ProfilePage() {
           if (sentenceFilter) params.set('sentenceId', sentenceFilter);
           if (searchFilter) params.set('search', searchFilter);
         }
-        params.set('limit', String(pageSize));
-        params.set('offset', String(offset));
-
-        const response = await fetch(`/api/profile?${params.toString()}`, {
-          method: 'GET',
-          credentials: 'include',
+        const data: LegacyProfileResponse = await fetchLegacyProfile({
+          date: params.get('date') || undefined,
+          sentenceId: params.get('sentenceId') || undefined,
+          search: params.get('search') || undefined,
+          limit: pageSize,
+          offset,
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile data');
-        }
-
-        const data = await response.json();
         setStats(data.stats);
-        setDailySummaries(data.dailySummaries || []);
-        setAttempts(data.attempts || []);
-        setAttemptsTotal(data.attemptsTotal || 0);
-        setSentenceOptions(data.sentenceOptions || []);
+        setDailySummaries(data.dailySummaries);
+        setAttempts(data.attempts);
+        setAttemptsTotal(data.attemptsTotal);
+        setSentenceOptions(data.sentenceOptions);
       } catch (error) {
         console.error('Error fetching profile data:', error);
       } finally {

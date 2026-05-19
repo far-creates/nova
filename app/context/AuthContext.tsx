@@ -1,13 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { fetchLegacyAuthMe, logoutLegacyAuth } from '@/packages/api/src/client';
+import type { LegacyAuthUser } from '@/packages/api/src/auth';
 
-interface User {
-  id: string;
-  email: string;
-  username: string | null;
-  createdAt: string;
-}
+type User = LegacyAuthUser;
 
 interface AuthContextType {
   user: User | null;
@@ -26,17 +23,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'include', // Important: include cookies
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData.user);
-        } else {
-          setUser(null);
-        }
+        const userData = await fetchLegacyAuthMe();
+        setUser(userData.user);
       } catch (error) {
         console.error('Auth check failed:', error);
         setUser(null);
@@ -50,10 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await logoutLegacyAuth();
       setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);

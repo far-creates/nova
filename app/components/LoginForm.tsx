@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
+import { useLocale } from '@/app/context/LocaleContext';
+import { loginWithLegacyAuth } from '@/packages/api/src/client';
+import Button from '@/app/components/ui/Button';
+import Card from '@/app/components/ui/Card';
+import Field from '@/app/components/ui/Field';
+import Input from '@/app/components/ui/Input';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -12,6 +18,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setUser } = useAuth();
+  const { messages } = useLocale();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,19 +26,10 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
+      const data = await loginWithLegacyAuth({
+        email,
+        password,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed');
-        return;
-      }
 
       // Update auth context with user data
       setUser(data.user);
@@ -39,7 +37,7 @@ export default function LoginForm() {
       // Redirect to landing page
       router.push('/');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -47,74 +45,71 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+    <div className="min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-md">
+        <Card variant="feature" padding="lg" className="space-y-8">
+          <div className="space-y-3 text-center">
+            <p className="font-ui-en text-xs uppercase tracking-[0.22em] text-[color:var(--color-accent-solar)]">
+              {messages.auth.loginTag}
+            </p>
+            <h2 className="text-3xl font-black text-[color:var(--color-text)]">
+              {messages.auth.loginTitle}
+            </h2>
+            <p className="text-sm leading-7 text-[color:var(--color-text-muted)]">
+              {messages.auth.loginDescription}
+            </p>
+          </div>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="rounded-[var(--radius-md)] border border-[color:var(--color-danger)]/20 bg-[color:var(--color-danger)]/10 p-4">
+              <p className="text-sm text-[color:var(--color-danger)]">{error}</p>
             </div>
           )}
 
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
+          <div className="space-y-4">
+            <Field label={messages.auth.email}>
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder={messages.auth.email}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
+            </Field>
+            <Field label={messages.auth.password}>
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder={messages.auth.password}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </div>
+            </Field>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
+          <div className="space-y-4">
+            <Button type="submit" disabled={loading} size="lg" className="w-full">
+              {loading ? messages.auth.signingIn : messages.auth.signin}
+            </Button>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign up
+            <p className="text-center text-sm text-[color:var(--color-text-muted)]">
+              {messages.auth.noAccount}{' '}
+              <Link
+                href="/signup"
+                className="font-medium text-[color:var(--color-primary)] hover:text-[color:var(--color-primary-hover)]"
+              >
+                {messages.auth.createAccount}
               </Link>
             </p>
           </div>
         </form>
+        </Card>
       </div>
     </div>
   );

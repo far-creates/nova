@@ -1,10 +1,17 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from './context/AuthContext';
+import { LocaleProvider } from './context/LocaleContext';
 import './globals.css';
-import { Vazirmatn } from 'next/font/google';
+import { Inter, Vazirmatn } from 'next/font/google';
 
 const vazirmatn = Vazirmatn({
   subsets: ['arabic'],
+  variable: '--font-ui-fa',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-ui-en',
 });
 
 
@@ -20,10 +27,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={vazirmatn.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      <body className={`${vazirmatn.variable} ${inter.variable} font-ui`}>
+        <LocaleProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import {
+  legacyProfileQueryInputSchema,
+  legacyProfileResponseSchema,
+} from '@/packages/api/src/profile';
+import {
   getUserAttemptsFiltered,
   getUserDailySummaries,
   getUserSentenceOptions,
@@ -19,12 +23,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const params = request.nextUrl.searchParams;
-    const date = params.get('date') || undefined;
-    const sentenceId = params.get('sentenceId') || undefined;
-    const search = params.get('search') || undefined;
-    const limit = Number(params.get('limit') || '20');
-    const offset = Number(params.get('offset') || '0');
+    const parsedQuery = legacyProfileQueryInputSchema.safeParse({
+      date: request.nextUrl.searchParams.get('date') || undefined,
+      sentenceId: request.nextUrl.searchParams.get('sentenceId') || undefined,
+      search: request.nextUrl.searchParams.get('search') || undefined,
+      limit: request.nextUrl.searchParams.get('limit') || '20',
+      offset: request.nextUrl.searchParams.get('offset') || '0',
+    });
+
+    if (!parsedQuery.success) {
+      return NextResponse.json(
+        {
+          error: 'Invalid profile query',
+          details: parsedQuery.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { date, sentenceId, search, limit, offset } = parsedQuery.data;
 
     const [stats, dailySummaries, attemptsResult, sentenceOptions] = await Promise.all([
       getUserStats(decoded.userId),
@@ -33,19 +50,30 @@ export async function GET(request: NextRequest) {
         date,
         sentenceId,
         search,
-        limit: Number.isNaN(limit) ? 20 : limit,
-        offset: Number.isNaN(offset) ? 0 : offset,
+        limit,
+        offset,
       }),
       getUserSentenceOptions(decoded.userId),
     ]);
 
-    return NextResponse.json({
+    const responsePayload = {
       stats,
       dailySummaries,
       attempts: attemptsResult.attempts,
       attemptsTotal: attemptsResult.total,
       sentenceOptions,
-    });
+    };
+
+    const parsedResponse = legacyProfileResponseSchema.safeParse(responsePayload);
+    if (!parsedResponse.success) {
+      console.error('Invalid profile response payload:', parsedResponse.error.flatten());
+      return NextResponse.json(
+        { error: 'Failed to fetch profile data' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(parsedResponse.data);
   } catch (error) {
     console.error('Error fetching profile data:', error);
     return NextResponse.json(

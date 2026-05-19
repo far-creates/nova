@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchLegacyTracks } from '@/packages/api/src/client';
+import type { LegacyTrackListResponse, LegacyTrackPayload } from '@/packages/api/src/tracks';
 
-export interface Sentence {
-  id: string;
-  title: string;
-  filePath: string;
-  difficulty: string;
-  createdAt: string;
-}
+export type Sentence = LegacyTrackPayload;
 
 interface SentenceListProps {
   onSelect: (sentence: Sentence) => void;
@@ -22,9 +18,7 @@ export default function SentenceList({ onSelect }: SentenceListProps) {
   useEffect(() => {
     const fetchSentences = async () => {
       try {
-        const res = await fetch('/api/tracks');
-        if (!res.ok) throw new Error('Failed to fetch tracks');
-        const data = await res.json();
+        const data: LegacyTrackListResponse = await fetchLegacyTracks();
         setSentences(data);
       } catch (err) {
         setError('Error loading tracks');

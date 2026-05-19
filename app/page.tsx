@@ -2,22 +2,20 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
+import { fetchLegacyTracks, submitLegacyAttempt } from '@/packages/api/src/client';
+import type { LegacyAttemptResponse } from '@/packages/api/src/attempts';
+import type { LegacyTrackPayload } from '@/packages/api/src/tracks';
 
-import Header from '@/app/components/blocks/Header';
-import HeroSection from '@/app/components/landing/sections/HeroSectionUnified';
+import AppHeader from '@/app/components/blocks/AppHeader';
+import HeroSection from '@/app/components/landing/sections/HeroSection';
 import ValueBanner from '@/app/components/landing/sections/ValueBanner';
 import FeatureGrid from '@/app/components/landing/sections/FeatureGrid';
 import AudienceGrid from '@/app/components/landing/sections/AudienceGrid';
 import ImpactSection from '@/app/components/landing/sections/ImpactSection';
 import ClosingCTA from '@/app/components/landing/sections/ClosingCTA';
+import LandingPracticeSection from '@/app/components/modules/LandingPracticeSection';
 
-interface TrackPreview {
-  id: string;
-  title: string;
-  filePath: string;
-  difficulty: string;
-  createdAt: string;
-}
+type TrackPreview = LegacyTrackPayload;
 
 const levelOrder = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -38,19 +36,14 @@ export default function LandingPage() {
 
   const [submitting, setSubmitting] =
     useState(false);
+  const [correction, setCorrection] =
+    useState<LegacyAttemptResponse | null>(null);
 
   useEffect(() => {
     const loadTracks = async () => {
       try {
-        const res = await fetch('/api/tracks');
-
-        if (!res.ok) {
-          return;
-        }
-
-        const data = await res.json();
-
-        setTracks(data || []);
+        const data = await fetchLegacyTracks();
+        setTracks(data);
       } catch {
         setTracks([]);
       }
@@ -132,6 +125,7 @@ export default function LandingPage() {
       setCurrentTrackIndex(nextIndex);
 
       setTypedPreview('');
+      setCorrection(null);
 
       setSubmitMessage(
         `سطح ${level} انتخاب شد`
@@ -147,6 +141,7 @@ export default function LandingPage() {
     selectRandomNextTrack();
 
     setTypedPreview('');
+    setCorrection(null);
 
     setSubmitMessage(
       'یک تمرین تازه انتخاب شد'
@@ -166,38 +161,24 @@ export default function LandingPage() {
     setSubmitting(true);
 
     setSubmitMessage('');
+    setCorrection(null);
 
     try {
-      const res = await fetch(
-        '/api/attempts',
+      const result = await submitLegacyAttempt(
         {
-          method: 'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-
+          audioTrackId: currentTrack.id,
+          userText: typedPreview,
+          saveAttempt:
+            shouldSaveAttempt,
+        },
+        {
           credentials: shouldSaveAttempt
             ? 'include'
             : 'same-origin',
-
-          body: JSON.stringify({
-            audioTrackId: currentTrack.id,
-            userText: typedPreview,
-            saveAttempt:
-              shouldSaveAttempt,
-          }),
         }
       );
 
-      if (!res.ok) {
-        throw new Error(
-          'Failed to submit attempt'
-        );
-      }
-
-      setTypedPreview('');
+      setCorrection(result);
 
       if (shouldSaveAttempt) {
         setSubmitMessage(
@@ -208,8 +189,6 @@ export default function LandingPage() {
           'تمرین انجام شد. برای ذخیره تاریخچه وارد حساب شوید.'
         );
       }
-
-      selectRandomNextTrack();
     } catch (error) {
       console.error(
         'Submit failed:',
@@ -226,7 +205,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#fdfaf2] text-[#2a402d]">
-      <Header
+      <AppHeader
         isAuthenticated={Boolean(user)}
         loading={loading}
       />
@@ -237,8 +216,9 @@ export default function LandingPage() {
 
           <div className="absolute right-0 top-96 h-80 w-80 rounded-full bg-[#f3ddb1]/35 blur-3xl" />
         </div>
+        <HeroSection />
 
-        <HeroSection
+        <LandingPracticeSection
           currentTrack={currentTrack}
           typedPreview={typedPreview}
           onTypedPreviewChange={
@@ -252,6 +232,7 @@ export default function LandingPage() {
           }
           selectedLevel={selectedLevel}
           submitMessage={submitMessage}
+          correction={correction}
         />
 
         <ValueBanner />

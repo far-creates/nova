@@ -1,14 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { submitLegacyAttempt } from '@/packages/api/src/client';
+import type { LegacyAttemptResponse } from '@/packages/api/src/attempts';
 import { Sentence } from './SentenceList';
 
-export interface CorrectionResult {
-  correct: number[];
-  wrong: Array<{ index: number; expected: string; got: string }>;
-  extra: Array<{ index: number; char: string }>;
-  accuracy: number;
-}
+type CorrectionResult = LegacyAttemptResponse;
 
 interface TextInputProps {
   sentence: Sentence;
@@ -17,60 +14,54 @@ interface TextInputProps {
 export default function TextInput({ sentence }: TextInputProps) {
   const [userText, setUserText] = useState('');
   const [correction, setCorrection] = useState<CorrectionResult | null>(null);
+  const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     setUserText(text);
     setSaveMessage('');
 
     if (!text) {
       setCorrection(null);
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/attempts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioTrackId: sentence.id, userText: text, saveAttempt: false }),
-      });
-
-      if (!res.ok) throw new Error('Failed to get correction');
-      const result = await res.json();
-      setCorrection(result);
-    } catch (err) {
-      console.error('Error getting correction:', err);
     }
   };
 
-  const handleSaveAttempt = async () => {
+  const submitAttempt = async (saveAttempt: boolean) => {
     if (!userText.trim()) return;
 
-    setSaving(true);
-    setSaveMessage('');
+    if (saveAttempt) {
+      setSaving(true);
+      setSaveMessage('');
+    } else {
+      setChecking(true);
+      setSaveMessage('');
+    }
+
     try {
-      const res = await fetch('/api/attempts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audioTrackId: sentence.id,
-          userText,
-          saveAttempt: true,
-        }),
+      const result: LegacyAttemptResponse = await submitLegacyAttempt({
+        audioTrackId: sentence.id,
+        userText,
+        saveAttempt,
       });
-
-      if (!res.ok) throw new Error('Failed to save attempt');
-
-      const result = await res.json();
       setCorrection(result);
-      setSaveMessage('Attempt saved.');
+
+      if (saveAttempt) {
+        setSaveMessage('Attempt saved.');
+      }
     } catch (err) {
-      console.error('Error saving attempt:', err);
-      setSaveMessage('Could not save attempt.');
+      console.error(saveAttempt ? 'Error saving attempt:' : 'Error getting correction:', err);
+
+      if (saveAttempt) {
+        setSaveMessage('Could not save attempt.');
+      }
     } finally {
-      setSaving(false);
+      if (saveAttempt) {
+        setSaving(false);
+      } else {
+        setChecking(false);
+      }
     }
   };
 
@@ -90,14 +81,24 @@ export default function TextInput({ sentence }: TextInputProps) {
       />
 
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleSaveAttempt}
-          disabled={saving || !userText.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save Attempt'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void submitAttempt(false)}
+            disabled={checking || saving || !userText.trim()}
+            className="px-4 py-2 border border-blue-200 text-blue-700 rounded-md hover:bg-blue-50 disabled:opacity-50"
+          >
+            {checking ? 'Checking...' : 'Check Answer'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void submitAttempt(true)}
+            disabled={checking || saving || !userText.trim()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Attempt'}
+          </button>
+        </div>
         {saveMessage && <p className="text-sm text-gray-600">{saveMessage}</p>}
       </div>
 

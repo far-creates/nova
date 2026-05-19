@@ -59,8 +59,8 @@ export async function verifyUserPassword(email: string, password: string): Promi
       username: user.username,
       createdAt: user.createdAt
     };
-  } catch (error) {
-    // Optionally log a generic error without details
+  } catch {
+    // Log a generic error without sensitive context.
     console.error('[verifyUserPassword] Internal error');
     return null;
   }

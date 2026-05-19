@@ -1,0 +1,10 @@
+{
+  "name": "@nova/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Database package for the Nova platform",
+  "scripts": {
+    "prisma:format": "prisma format --schema prisma/schema.prisma",
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma"
+  }
+}

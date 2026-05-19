@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:web": "pnpm --dir apps/web dev",
     "build": "next build",
+    "build:web": "pnpm --dir apps/web build",
     "start": "next start",
     "lint": "eslint",
+    "lint:web": "pnpm --dir apps/web lint",
+    "test": "node -r ./tests/register-alias.cjs --import tsx --experimental-test-module-mocks --test --test-concurrency=1 --test-isolation=none tests/index.test.ts",
+    "test:watch": "node -r ./tests/register-alias.cjs --import tsx --experimental-test-module-mocks --test --test-concurrency=1 --test-isolation=none --watch tests/index.test.ts",
     "import:audio": "tsx scripts/import-audio.ts"
   },
   "dependencies": {
@@ -22,7 +27,8 @@
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
