@@ -93,9 +93,15 @@ importers:
       '@nova/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@nova/application':
+        specifier: workspace:*
+        version: link:../../packages/application
       '@nova/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@nova/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@prisma/client':
         specifier: ^7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
@@ -176,9 +182,37 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
 
-  packages/db: {}
+  packages/application:
+    dependencies:
+      '@nova/api':
+        specifier: workspace:*
+        version: link:../api
+      '@nova/domain':
+        specifier: workspace:*
+        version: link:../domain
+
+  packages/db:
+    dependencies:
+      '@prisma/client':
+        specifier: ^7.8.0
+        version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      prisma:
+        specifier: ^7.8.0
+        version: 7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
 
   packages/domain: {}
+
+  packages/ui:
+    dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      tailwind-merge:
+        specifier: ^3.6.0
+        version: 3.6.0
 
 packages:
 

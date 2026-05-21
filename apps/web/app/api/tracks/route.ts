@@ -1,1 +1,1 @@
-export { GET } from '@/app/api/tracks/route';
+export { tracksGetHandler as GET } from '@/apps/web/server/api/tracks';

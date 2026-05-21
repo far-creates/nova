@@ -18,17 +18,12 @@ mock.module('@/lib/auth', {
   },
 });
 
-mock.module('@/lib/sentences', {
+mock.module('@/packages/db/src', {
   namedExports: {
     getSentenceById: async () => sentenceResult,
     createAttempt: async (...args: [string, string, string]) => {
       createAttemptCalls.push(args);
     },
-  },
-});
-
-mock.module('@/lib/tracks', {
-  namedExports: {
     getSentenceByTrackId: async () => sentenceResult,
   },
 });

@@ -1,7 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { closeConnection } from '../lib/db';
-import { upsertTrackWithSentence, ensureAudioSchema } from '../lib/tracks';
+import { closeConnection, ensureAudioSchema, upsertTrackWithSentence } from '../packages/db/src';
 
 interface ManifestItem {
   trackFile: string;

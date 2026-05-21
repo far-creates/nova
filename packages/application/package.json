@@ -1,0 +1,12 @@
+{
+  "name": "@nova/application",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared backend application use-cases for the Nova platform",
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@nova/api": "workspace:*",
+    "@nova/domain": "workspace:*"
+  }
+}

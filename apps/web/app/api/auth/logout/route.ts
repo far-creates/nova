@@ -1,1 +1,1 @@
-export { POST } from '@/app/api/auth/logout/route';
+export { logoutPostHandler as POST } from '@/apps/web/server/api/auth';

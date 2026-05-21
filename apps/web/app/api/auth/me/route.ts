@@ -1,1 +1,1 @@
-export { GET } from '@/app/api/auth/me/route';
+export { meGetHandler as GET } from '@/apps/web/server/api/auth';

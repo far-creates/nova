@@ -1,1 +1,1 @@
-export { default } from '@/app/practice/page';
+export { default } from '@/apps/web/features/practice/PracticePage';

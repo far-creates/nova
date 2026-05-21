@@ -1,13 +1,14 @@
 # packages/ui
 
-Reserved package for shared UI foundations.
+Shared UI primitives for Nova.
 
-## Intended Contents
+## Current Contents
 
-- design tokens
-- future shared primitives
-- platform-consistent styling guidance
+- `cn`
+- `Button`
+- `Card`
+- `Field`
+- `Input`
+- `Textarea`
 
-## Note
-
-Only extract components here when they are truly shared and stable enough.
+These are extracted from the current web app and are intended to become the source of truth for stable cross-feature primitives.

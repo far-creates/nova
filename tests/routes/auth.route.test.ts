@@ -21,7 +21,7 @@ let getUserByIdResult: MockUser | null = null;
 let verifyTokenResult: { userId: string } | null = { userId: 'user-1' };
 const createdToken = 'jwt-token';
 
-mock.module('@/lib/users', {
+mock.module('@/packages/db/src', {
   namedExports: {
     verifyUserPassword: async () => verifyUserPasswordResult,
     getUserByEmail: async () => getUserByEmailResult,

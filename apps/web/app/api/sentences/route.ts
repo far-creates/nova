@@ -1,1 +1,1 @@
-export { GET } from '@/app/api/sentences/route';
+export { sentencesGetHandler as GET } from '@/apps/web/server/api/sentences';

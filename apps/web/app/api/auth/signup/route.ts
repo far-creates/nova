@@ -1,1 +1,1 @@
-export { POST } from '@/app/api/auth/signup/route';
+export { signupPostHandler as POST } from '@/apps/web/server/api/auth';

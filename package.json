@@ -12,7 +12,11 @@
     "lint:web": "pnpm --dir apps/web lint",
     "test": "node -r ./tests/register-alias.cjs --import tsx --experimental-test-module-mocks --test --test-concurrency=1 --test-isolation=none tests/index.test.ts",
     "test:watch": "node -r ./tests/register-alias.cjs --import tsx --experimental-test-module-mocks --test --test-concurrency=1 --test-isolation=none --watch tests/index.test.ts",
-    "import:audio": "tsx scripts/import-audio.ts"
+    "import:audio": "tsx scripts/import-audio.ts",
+    "db:prisma:format": "pnpm --dir packages/db prisma:format",
+    "db:prisma:validate": "pnpm --dir packages/db prisma:validate",
+    "db:prisma:generate": "pnpm --dir packages/db prisma:generate",
+    "db:push": "pnpm --dir packages/db prisma:db:push"
   },
   "dependencies": {
     "@prisma/client": "^7.8.0",

@@ -1,5 +1,4 @@
-import { createSentence } from '../lib/sentences';
-import { closeConnection } from '../lib/db';
+import { closeConnection, createSentence } from '../packages/db/src';
 
 async function seed() {
   const sentences = [

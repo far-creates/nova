@@ -7,283 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  GUEST
-  LEARNER
-  CREATOR
-  ADMIN
-}
-
-enum CreatorStatus {
-  NONE
-  VERIFIED
-  SUSPENDED
-}
-
-enum AuthProvider {
-  PASSWORD
-  PHONE_OTP
-  GOOGLE
-}
-
-enum TrackLevel {
-  A1
-  A2
-  B1
-  B2
-  C1
-  C2
-}
-
-enum Accent {
-  BRITISH
-  AMERICAN
-  CANADIAN
-  AUSTRALIAN
-}
-
-enum SessionType {
-  RANDOM
-  TOPIC
-  REVIEW
-}
-
-enum AttemptSource {
-  HERO_RANDOM
-  TOPIC_SESSION
-  REVIEW_SESSION
-}
-
-enum ContributionEventType {
-  ATTEMPT_COMPLETED
-  SESSION_COMPLETED
-  REVIEW_COMPLETED
-  STREAK_AWARDED
-  BONUS_GRANTED
-}
-
-enum CreatorPermissionStatus {
-  PENDING
-  VERIFIED
-  SUSPENDED
-  REVOKED
-}
-
-enum UploadJobStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
 model User {
-  id                String                 @id @default(uuid())
-  username          String                 @unique
-  email             String?                @unique
-  phoneNumber       String?                @unique
-  passwordHash      String?
-  role              UserRole               @default(LEARNER)
-  creatorStatus     CreatorStatus          @default(NONE)
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  lastSeenAt        DateTime?
-  authIdentities    AuthIdentity[]
-  practiceSessions  PracticeSession[]
-  attempts          Attempt[]
-  reviewItemStates  ReviewItemState[]
-  contributionEvents ContributionEvent[]
-  uploadedTracks    AudioTrack[]           @relation("UploadedTracks")
-  creatorPermission CreatorPermission?
-  grantedPermissions CreatorPermission[]   @relation("PermissionGrantedBy")
-  uploadJobs        ContentUploadJob[]     @relation("UploadSubmittedBy")
-}
-
-model AuthIdentity {
-  id             String       @id @default(uuid())
-  userId         String
-  provider       AuthProvider
-  providerUserId String
-  createdAt      DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerUserId])
-  @@index([userId])
-}
-
-model GuestSession {
-  id                 String              @id @default(uuid())
-  cookieToken        String              @unique
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  lastSeenAt         DateTime?
-  expiresAt          DateTime?
-  practiceSessions   PracticeSession[]
-  attempts           Attempt[]
-  contributionEvents ContributionEvent[]
-
-  @@index([lastSeenAt])
-  @@index([expiresAt])
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String?   @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  attempts     Attempt[]
 }
 
 model AudioTrack {
-  id               String             @id @default(uuid())
-  title            String
-  transcript       String
-  filePath         String             @unique
-  level            TrackLevel
-  accent           Accent
-  durationSeconds  Int?
-  isActive         Boolean            @default(true)
-  createdById      String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdBy        User?              @relation("UploadedTracks", fields: [createdById], references: [id], onDelete: SetNull)
-  topics           AudioTrackTopic[]
-  attempts         Attempt[]
-  reviewItemStates ReviewItemState[]
-
-  @@index([level])
-  @@index([accent])
-  @@index([createdById])
-  @@index([isActive])
+  id         String    @id @default(uuid())
+  title      String
+  filePath   String    @unique
+  difficulty String    @default("easy")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  sentence   Sentence?
 }
 
-model Topic {
-  id        String           @id @default(uuid())
-  slug      String           @unique
-  name      String
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  tracks    AudioTrackTopic[]
-  sessions  PracticeSession[]
-}
+model Sentence {
+  id           String     @id @default(uuid())
+  text         String
+  difficulty   String     @default("easy")
+  audioTrackId String?    @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  audioTrack   AudioTrack? @relation(fields: [audioTrackId], references: [id], onDelete: SetNull)
+  attempts     Attempt[]
 
-model AudioTrackTopic {
-  audioTrackId String
-  topicId      String
-  createdAt    DateTime  @default(now())
-  audioTrack   AudioTrack @relation(fields: [audioTrackId], references: [id], onDelete: Cascade)
-  topic        Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
-
-  @@id([audioTrackId, topicId])
-  @@index([topicId])
-}
-
-model PracticeSession {
-  id             String       @id @default(uuid())
-  userId         String?
-  guestSessionId String?
-  sessionType    SessionType
-  topicId        String?
-  level          TrackLevel?
-  accent         Accent?
-  startedAt      DateTime     @default(now())
-  endedAt        DateTime?
-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
-  topic          Topic?       @relation(fields: [topicId], references: [id], onDelete: SetNull)
-  attempts       Attempt[]
-
-  @@index([userId])
-  @@index([guestSessionId])
-  @@index([sessionType])
-  @@index([topicId])
+  @@index([difficulty])
 }
 
 model Attempt {
-  id                    String          @id @default(uuid())
-  userId                String?
-  guestSessionId        String?
-  practiceSessionId     String?
-  audioTrackId          String
-  submittedText         String
-  normalizedSubmittedText String
-  transcriptSnapshot    String
-  accuracyScore         Decimal         @db.Decimal(5, 2)
-  mistakeCount          Int             @default(0)
-  playbackRate          Decimal?        @db.Decimal(4, 2)
-  attemptSource         AttemptSource
-  createdAt             DateTime        @default(now())
-  user                  User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  guestSession          GuestSession?   @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
-  practiceSession       PracticeSession? @relation(fields: [practiceSessionId], references: [id], onDelete: SetNull)
-  audioTrack            AudioTrack      @relation(fields: [audioTrackId], references: [id], onDelete: Cascade)
-  contributionEvents    ContributionEvent[]
+  id         String   @id @default(uuid())
+  sentenceId String
+  userId     String
+  userText   String
+  createdAt  DateTime @default(now())
+  sentence   Sentence @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([guestSessionId])
-  @@index([practiceSessionId])
-  @@index([audioTrackId])
-  @@index([createdAt])
-}
-
-model ReviewItemState {
-  id             String     @id @default(uuid())
-  userId         String
-  audioTrackId   String
-  attemptCount   Int        @default(0)
-  lastAccuracy   Decimal?   @db.Decimal(5, 2)
-  lastAttemptAt  DateTime?
-  successStreak  Int        @default(0)
-  failureStreak  Int        @default(0)
-  priorityScore  Decimal?   @db.Decimal(8, 3)
-  nextReviewAt   DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  audioTrack     AudioTrack @relation(fields: [audioTrackId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, audioTrackId])
-  @@index([nextReviewAt])
-  @@index([priorityScore])
-}
-
-model ContributionEvent {
-  id                      String                 @id @default(uuid())
-  userId                  String?
-  guestSessionId          String?
-  attemptId               String?
-  eventType               ContributionEventType
-  symbolicPoints          Decimal                @db.Decimal(10, 2)
-  realWorldEnergyEstimate Decimal?               @db.Decimal(12, 4)
-  formulaVersion          String
-  createdAt               DateTime               @default(now())
-  user                    User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
-  guestSession            GuestSession?          @relation(fields: [guestSessionId], references: [id], onDelete: SetNull)
-  attempt                 Attempt?               @relation(fields: [attemptId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([guestSessionId])
-  @@index([attemptId])
-  @@index([eventType])
-  @@index([createdAt])
-}
-
-model CreatorPermission {
-  id          String                   @id @default(uuid())
-  userId      String                   @unique
-  status      CreatorPermissionStatus  @default(PENDING)
-  grantedById String?
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
-  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  grantedBy   User?                    @relation("PermissionGrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
-
-  @@index([status])
-  @@index([grantedById])
-}
-
-model ContentUploadJob {
-  id            String          @id @default(uuid())
-  submittedById String
-  status        UploadJobStatus @default(PENDING)
-  sourcePath    String
-  errorMessage  String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  submittedBy   User            @relation("UploadSubmittedBy", fields: [submittedById], references: [id], onDelete: Cascade)
-
-  @@index([submittedById])
-  @@index([status])
-  @@index([createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sentenceId, createdAt(sort: Desc)])
 }

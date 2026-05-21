@@ -3,8 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "description": "Database package for the Nova platform",
+  "type": "module",
+  "main": "./src/index.ts",
   "scripts": {
     "prisma:format": "prisma format --schema prisma/schema.prisma",
-    "prisma:validate": "prisma validate --schema prisma/schema.prisma"
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:db:push": "prisma db push --schema prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "prisma": "^7.8.0"
   }
 }

@@ -1,1 +1,1 @@
-export { POST } from '@/app/api/attempts/route';
+export { attemptsPostHandler as POST } from '@/apps/web/server/api/attempts';
