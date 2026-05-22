@@ -6,9 +6,9 @@ export default function AudienceGrid() {
     <section id="audience" className="py-8 md:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Ø¨Ø±Ø§ÛŒ Ú†Ù‡ Ú©Ø³Ø§Ù†ÛŒØŸ"
-          title="Ø¨Ø±Ø§ÛŒ Ú†Ù‡ Ú©Ø³Ø§Ù†ÛŒ Ø³Ø§Ø®ØªÙ‡ Ø´Ø¯Ù‡ Ø§Ø³ØªØŸ"
-          description="Ø§Ø² Ù…Ø¹Ù„Ù… ØªØ§ Ø¯Ø§Ù†Ø´Ø¬Ùˆ Ùˆ Ø²Ø¨Ø§Ù†â€ŒØ¢Ù…ÙˆØ² Ù…Ø³ØªÙ‚Ù„ØŒ Ù‡Ù…Ù‡ Ù…ÛŒâ€ŒØªÙˆØ§Ù†Ù†Ø¯ Ø§Ø² Ø§ÛŒÙ† Ø³Ø§Ø®ØªØ§Ø± Ø³Ø§Ø¯Ù‡ Ø§Ø³ØªÙØ§Ø¯Ù‡ Ú©Ù†Ù†Ø¯."
+          eyebrow="برای چه کسانی؟"
+          title="برای چه کسانی ساخته شده است؟"
+          description="از معلم تا دانشجو و زبان‌آموز مستقل، همه می‌توانند از این ساختار ساده استفاده کنند."
         />
 
         <div id="learners" className="mt-8 grid gap-4 md:grid-cols-3">

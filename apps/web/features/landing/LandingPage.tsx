@@ -92,7 +92,7 @@ export default function LandingPage() {
       setCurrentTrackIndex(nextIndex);
       setTypedPreview('');
       setCorrection(null);
-      setSubmitMessage(`Ø³Ø·Ø­ ${level} Ø§Ù†ØªØ®Ø§Ø¨ Ø´Ø¯`);
+      setSubmitMessage(`سطح ${level} انتخاب شد`);
     }
   };
 
@@ -104,7 +104,7 @@ export default function LandingPage() {
     selectRandomNextTrack();
     setTypedPreview('');
     setCorrection(null);
-    setSubmitMessage('ÛŒÚ© ØªÙ…Ø±ÛŒÙ† ØªØ§Ø²Ù‡ Ø§Ù†ØªØ®Ø§Ø¨ Ø´Ø¯');
+    setSubmitMessage('یک تمرین تازه انتخاب شد');
   };
 
   const handleSubmitRandom = async () => {
@@ -132,12 +132,12 @@ export default function LandingPage() {
       setCorrection(result);
       setSubmitMessage(
         shouldSaveAttempt
-          ? 'Ù¾Ø§Ø³Ø®Øª Ø°Ø®ÛŒØ±Ù‡ Ø´Ø¯. ØªÙ…Ø±ÛŒÙ† Ø¨Ø¹Ø¯ÛŒ Ø¢Ù…Ø§Ø¯Ù‡ Ø§Ø³Øª.'
-          : 'ØªÙ…Ø±ÛŒÙ† Ø§Ù†Ø¬Ø§Ù… Ø´Ø¯. Ø¨Ø±Ø§ÛŒ Ø°Ø®ÛŒØ±Ù‡ ØªØ§Ø±ÛŒØ®Ú†Ù‡ ÙˆØ§Ø±Ø¯ Ø­Ø³Ø§Ø¨ Ø´ÙˆÛŒØ¯.'
+          ? 'پاسخت ذخیره شد. تمرین بعدی آماده است.'
+          : 'تمرین انجام شد. برای ذخیره تاریخچه وارد حساب شوید.'
       );
     } catch (error) {
       console.error('Submit failed:', error);
-      setSubmitMessage('Ø§Ø±Ø³Ø§Ù„ Ø§Ù†Ø¬Ø§Ù… Ù†Ø´Ø¯. Ù„Ø·ÙØ§Ù‹ Ø¯ÙˆØ¨Ø§Ø±Ù‡ ØªÙ„Ø§Ø´ Ú©Ù†.');
+      setSubmitMessage('ارسال انجام نشد. لطفاً دوباره تلاش کن.');
     } finally {
       setSubmitting(false);
     }

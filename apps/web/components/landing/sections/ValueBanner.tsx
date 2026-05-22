@@ -20,9 +20,9 @@ export default function ValueBanner() {
               </div>
               <div>
                 <h3 className="text-3xl font-black leading-tight text-[#2a4030] md:text-4xl">
-                  Ø±Ø´Ø¯ Ú©Ù† Ùˆ
-                  <br />
-                  Ø¨Ù‡ Ø±Ø´Ø¯ Ø§ÛŒØ±Ø§Ù† Ú©Ù…Ú© Ú©Ù†!
+                رشد کن و
+                <br />
+به رشد ایران کمک کن!
                 </h3>
               </div>
             </div>
@@ -30,8 +30,8 @@ export default function ValueBanner() {
             <div className="flex items-center gap-4 md:justify-end">
               <div className="hidden h-10 w-px bg-[#d8cfae] md:block" />
               <p className="max-w-2xl text-sm leading-8 text-[#5d6c56] md:text-base">
-                Ø¨Ø§ ÛŒØ§Ø¯Ú¯ÛŒØ±ÛŒ Ùˆ ØªÙ…Ø±ÛŒÙ†ØŒ Ø¢ÛŒÙ†Ø¯Ù‡â€ŒÛŒ Ø®ÙˆØ¯Øª Ø±Ø§ Ù…ÛŒâ€ŒØ³Ø§Ø²ÛŒ Ùˆ Ø¯Ø± Ø³Ø§Ø®ØªÙ† ÙØ±Ø¯Ø§ÛŒÛŒ Ø¨Ù‡ØªØ± Ø¨Ø±Ø§ÛŒ
-                Ù‡Ù…Ù‡ Ù†Ù‚Ø´ Ø¯Ø§Ø±ÛŒ.
+              با یادگیری و تمرین، آینده‌ی خودت را می‌سازی و در ساختن فردایی بهتر برای
+              همه نقش داری.
               </p>
             </div>
           </div>
