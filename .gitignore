@@ -44,3 +44,7 @@ next-env.d.ts
 
 # local temp artifacts
 _tmp_*
+
+# Auto-generated metadata dumps
+_*_meta.json
+**/_*_meta.json
