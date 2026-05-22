@@ -48,3 +48,8 @@ _tmp_*
 # Auto-generated metadata dumps
 _*_meta.json
 **/_*_meta.json
+
+# Prisma engine binaries (auto-downloaded, platform-specific)
+packages/db/prisma/bin/
+**/prisma/bin/
+**/.prisma/
